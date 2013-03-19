@@ -1,3 +1,0 @@
-cat: this is a test: No such file or directory
-this is another message
-Hi guys
