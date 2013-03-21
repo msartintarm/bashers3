@@ -5,6 +5,8 @@
 
 int raid_level;
 disk_array_t da;
+int disk;
+int strip;
 
 char* trimNewline(char* str) {
   
@@ -18,9 +20,11 @@ char* trimNewline(char* str) {
 }
 
 
-void raid_init(disk_array_t the_array, int the_level) {
+void raid_init(disk_array_t the_array, int the_level, int strip_, int disk_) {
   raid_level = the_level;
   da = the_array;
+  disk = disk_;
+  strip = strip_;
 }
 
 void raid_disk_array_read(int block_num, int block_size) {

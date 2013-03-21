@@ -9,7 +9,7 @@
  disk 1 gets blocks 2-3 and 8-9, &
  disk 3 gets blocks 4-5 and 10-11.
 */
-
+void setSizes(int s, int d);
 /* TODO We need to do some bookeeping right away.
  * Setup the disk structure before hand which will 
  * provide the mapping of the LBA to the proper (disk,block) address
