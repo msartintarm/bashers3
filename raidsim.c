@@ -1,6 +1,9 @@
+#include "raid_handler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+int verbose;
 
 int main(int argc, char *argv[]){
 
@@ -11,7 +14,7 @@ int main(int argc, char *argv[]){
   int disks = 0;
   int size = 0;
   char* trace = malloc(100);
-  int verbose = 0;
+  verbose = 0;
 
   
   if(argc == 12){
@@ -73,6 +76,39 @@ int main(int argc, char *argv[]){
     fprintf(stderr, "bad trace file\n");
     exit(0);
   }
+
+  char* one_line = malloc(513 * sizeof(char));
+
+  while(fgets(one_line, 513, trace_file) != NULL) {
+
+	char* first_word = strtok(one_line, " ");
+
+	if(!strcmp(first_word, "READ")) {
+	  int block_num = atoi(strtok(NULL, " "));
+	  int block_size = atoi(strtok(NULL, " "));
+	  raid_disk_array_read(block_num, block_size);
+
+	} else if(!strcmp(first_word, "WRITE")) {
+	  // Value is 4 bytes : we assume 4 chars
+	  int block_num = atoi(strtok(NULL, " "));
+	  int block_size = atoi(strtok(NULL, " "));
+	  char* value = strtok(NULL, " ");
+	  raid_disk_array_write(block_num, block_size, value);
+	  
+	} else if(!strcmp(first_word, "FAIL")) {
+	  int disk_num = atoi(strtok(NULL, " "));
+	  raid_disk_fail(disk_num);
+	  
+	} else if(!strcmp(first_word, "RECOVER")) {
+	  int disk_num = atoi(strtok(NULL, " "));
+	  raid_disk_recover(disk_num);
+	  
+	} else if(!strcmp(first_word, "END")) {
+	  return 0;
+	}
+  }
+  free(one_line);
+  
   
   
   printf("level: %d\nstrip: %d\ndisks: %d\nsize: %d\ntrace: %s\nverbose: %d\n", level,
