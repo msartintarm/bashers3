@@ -1,6 +1,6 @@
 CXX=gcc
 RM=rm -f
-SRCS = disk-array.c disk.c raidsim.c raid_handler.c
+SRCS = disk-array.c disk.c raidZero.c raidsim.c raid_handler.c
 OBJS = $(SRCS:.c=.o)
 CPPFLAGS = -Wall -Werror -g
 LDFLAGS = -Wall -Werror 
@@ -11,6 +11,9 @@ all: prog
 
 prog: $(OBJS)
 	gcc $(LDFLAGS) -o $(PROG) $(OBJS) $(LDLIBS) 
+
+run: prog
+	./$(PROG) -level 0 -strip 1 -disks 1 -size 1 -trace sampleTrace.txt -verbose
 
 valgrind: $(OBJS)
 	gcc $(LDFLAGS)  -o $(PROG) $(OBJS) $(LDLIBS) 

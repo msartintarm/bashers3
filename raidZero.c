@@ -1,28 +1,5 @@
-#include "disk-array.h"
+#include "raidZero.h"
 
-/*RAID 0
-*
- Blocks should be striped across disks, starting with the lowest numbered disk and increasing.
- Each disk gets a strip of blocks, which is one or more   blocks.
- For example, with 3 disks and strip size of 2,
- disk 0 gets blocks 0-1 and 6-7,
- disk 1 gets blocks 2-3 and 8-9, &
- disk 3 gets blocks 4-5 and 10-11.
-*/
-
-/* TODO We need to do some bookeeping right away.
- * Setup the disk structure before hand which will 
- * provide the mapping of the LBA to the proper (disk,block) address
- * Then read/write can just iterate without knowing anything about disk structure
- */ 
-
-char buffer[BLOCK_SIZE];
-
-
-/**
- * Read starting at block LBA for SIZE blocks.
- * Then print out the first 4 byte value in each block. 
- */
 int zeroRead(disk_array_t da, int size, int lba) {
   int rc = 0;
   //for size 
@@ -32,11 +9,8 @@ int zeroRead(disk_array_t da, int size, int lba) {
   
   return rc;
 }
-/**
- * Write the 4-byte pattern VALUE repeatedly
- * starting at block LBA for SIZE blocks. 
- */
-int zeroWrite(disk_array_t da, int size, int lba) {
+
+int zeroWrite(disk_array_t da, int size, int lba, char* value) {
   int rc = 0;
   //call method to translate lba
   //for i = 0; i < size; i++
@@ -47,3 +21,7 @@ int zeroWrite(disk_array_t da, int size, int lba) {
 }
 
 
+//	      disk_array_recover_disk(da,failed_disk);
+//	      disk_array_fail_disk(da,failed_disk);
+//	    if (disk_array_read(da, disk, block, buffer) == 0) {
+//	    disk_array_write(da, disk, block, buffer);

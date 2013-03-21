@@ -1,4 +1,5 @@
 #include "raid_handler.h"
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +14,7 @@ int main(int argc, char *argv[]){
   int strip = 0;
   int disks = 0;
   int size = 0;
-  char* trace = malloc(100);
+  char* trace;
   verbose = 0;
 
   
@@ -70,7 +71,17 @@ int main(int argc, char *argv[]){
     fprintf(stderr, "must have more than 2 disks for raid level %d\n", level);
     exit(0);
   }
+
+  // Input params have passed syntax checking - now init disks and RAID.
   
+	disk_array_t da = disk_array_create("myvirtualdisk", disks, size);
+	if(!da) {
+		fprintf(stderr,"couldn't create virtual disk: %s\n",strerror(errno));
+		return 1;
+	}
+
+	raid_init(da, level);
+
   FILE* trace_file = fopen(trace, "r");
   if(trace_file == NULL){
     fprintf(stderr, "bad trace file\n");
@@ -104,21 +115,15 @@ int main(int argc, char *argv[]){
 	  raid_disk_recover(disk_num);
 	  
 	} else if(!strcmp(first_word, "END")) {
-	  return 0;
+	  //	  disk_array_print_stats();
+	  break;
 	}
   }
+  
   free(one_line);
-  
-  
-  
-  printf("level: %d\nstrip: %d\ndisks: %d\nsize: %d\ntrace: %s\nverbose: %d\n", level,
-                      strip,
-                      disks,
-                      size,
-                      trace,
-                      verbose);
-  
-  
-  return 1;
+
+  fclose(trace_file);
+  disk_array_close(da);
+  return 0;
 
 }

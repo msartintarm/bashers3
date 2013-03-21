@@ -37,12 +37,12 @@ disk_array_t disk_array_create( const char *filename,
     goto Cleanup;
   }
 
-  disk_array = malloc(sizeof(disk_array) + (disks) * sizeof(struct disk *));
+  disk_array = malloc(sizeof(struct disk_array) + (disks) * sizeof(struct disk *));
   if (disk_array == NULL) {
     goto Cleanup;
   }
 
-  memset(disk_array, 0, sizeof(disk_array) + (disks) * sizeof(struct disk *));
+  memset(disk_array, 0, sizeof(struct disk_array) + (disks) * sizeof(struct disk *));
 
   disk_array->ndisks = disks;
   disk_array->nblocks = blocks;
@@ -62,7 +62,7 @@ disk_array_t disk_array_create( const char *filename,
       goto Cleanup;
     }
   }
-    return(disk_array);
+  return(disk_array);
   Cleanup:
     disk_array_close(disk_array);
     return(NULL);
@@ -132,10 +132,12 @@ void disk_array_close( disk_array_t da )
     for (i = 0; i < da->ndisks; i ++) {
       if (da->disks[i] != NULL) {
 	disk_close(da->disks[i]);
+	da->disks[i] = 0;
       }
     }
     if (da->filename != NULL) {
       free(da->filename);
+      da->filename = NULL;
     }
     free(da);
   }
