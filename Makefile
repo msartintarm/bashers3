@@ -1,6 +1,6 @@
 CXX=gcc
 RM=rm -f
-SRCS = disk-array.c disk.c test.c
+SRCS = disk-array.c disk.c raidsim.c raid_handler.c
 OBJS = $(SRCS:.c=.o)
 CPPFLAGS = -Wall -Werror -g
 LDFLAGS = -Wall -Werror 
