@@ -82,8 +82,14 @@ int zeroWrite(disk_array_t da, int size, int lba, char* value) {
   return rc;
 }
 
+int zeroFail(disk_array_t da, int failed_disk) {
+  int rc = 0;
+  rc = disk_array_fail_disk(da,failed_disk);
+  return rc;
+}
+
 
 //	      disk_array_recover_disk(da,failed_disk);
-//	      disk_array_fail_disk(da,failed_disk);
+//	      
 //	    if (disk_array_read(da, disk, block, buffer) == 0) {
 //	    disk_array_write(da, disk, block, buffer);

@@ -58,8 +58,22 @@ void raid_disk_array_write(int block_num, int block_size, char* value) {
 }
 
 void raid_disk_fail(int disk_num) {
-
- printf("Disk %d failure.\n", disk_num);
+  int rc;
+  switch(raid_level) {
+  case 0:
+		   rc = zeroFail(da, disk_num);
+		   if(rc == 0){
+		    printf("Disk %d failure.\n", disk_num);
+		   }
+		   else {
+		    printf("Error failing disk %d\n", disk_num);
+		   }
+	break;
+  default:
+	;
+	break;
+  }
+ 
 }
 
 void raid_disk_recover(int disk_num) {

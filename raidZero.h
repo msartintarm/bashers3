@@ -31,3 +31,5 @@ int zeroRead(disk_array_t da, int size, int lba);
  */
 int zeroWrite(disk_array_t da, int size, int lba, char* value);
 
+int zeroFail(disk_array_t da, int failed_disk);
+
