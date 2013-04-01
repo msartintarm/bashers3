@@ -1,31 +1,36 @@
-#include "raidZero.h"
+#include "raidFour.h"
 #include <stdio.h>
 #include <string.h>
 
-/* TODO We need to do some bookeeping right away.
- * Setup the disk structure before hand which will 
- * provide the mapping of the LBA to the proper (disk,block) address
- * Then read/write can just iterate without knowing anything about disk structure
- */ 
 
 int strip;
 int disk;
 char buffer[BLOCK_SIZE];
 
-/*RAID 0
+/*RAID 4
 *
- Blocks should be striped across disks, starting with the lowest numbered disk and increasing.
- Each disk gets a strip of blocks, which is one or more   blocks.
- For example, with 3 disks and strip size of 2,
- disk 0 gets blocks 0-1 and 6-7,
- disk 1 gets blocks 2-3 and 8-9, &
- disk 3 gets blocks 4-5 and 10-11.
-*/
+  Striped in strip size units across the first n-1 disks
+   Disk n should receive the parity. 
+
+  For 4 disks and strip size 3, 
+   disk 0 gets blocks 0-2 and 9-11, 
+   disk 1 gets blocks 3-5 and 12-14, 
+   disk 2 gets blocks 6-8 and 15-17. 
+
+  The parity disk gets the byte-wise XOR of the n-1 data disks. 
+  
+  In this case, block 0 XOR block 3 XOR block 6, 
+                block 1 XOR block 4 XOR block 7, 
+                block 2 XOR block 5 XOR block 8 etc.*/
 
 /**
  * yeah I went there. Strip those disks!
  */
 static int stripper(disk_array_t da, int size, int lba, char* value, short isWrite) {
+
+
+
+
   int rc = 0;
   short startFound = 0;
   int diskIndex  = 0;
@@ -80,19 +85,19 @@ static int stripper(disk_array_t da, int size, int lba, char* value, short isWri
   return rc;
 }
 
-int zeroRead(disk_array_t da, int size, int lba) {
+int fourRead(disk_array_t da, int size, int lba) {
   int rc = 0;
   rc = stripper(da, size, lba, NULL, 1);
   return rc;
 }
 
-int zeroWrite(disk_array_t da, int size, int lba, char* value) {
+int fourWrite(disk_array_t da, int size, int lba, char* value) {
   int rc = 0;
   rc = stripper(da, size, lba, value, 1);
   return rc;
 }
 
-int zeroFail(disk_array_t da, int failed_disk) {
+int fourFail(disk_array_t da, int failed_disk) {
   int rc = 0;
   rc = disk_array_fail_disk(da,failed_disk);
   return rc;

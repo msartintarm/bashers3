@@ -9,6 +9,8 @@ void fakePrint(int d, int b){
   printf("Writing [disk,block]: [%d,%d]\n", d, b);
 }
 
+int verbose = 0;
+
 int main( int argc, char *argv[] ) {
   
   int strip = atoi(argv[1]);
