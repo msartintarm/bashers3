@@ -15,6 +15,7 @@ prog: $(OBJS) $(PROG).c
 
 raid0: $(OBJS) $(RAID0).o
 	gcc $(LDFLAGS) -o $(RAID0) $(OBJS) $(RAID0).o $(LDLIBS) 
+	./$(RAID0) 1 1 0 1 
 
 run: prog
 	./$(PROG) -level 0 -strip 1 -disks 1 -size 1 -trace sampleTrace.txt -verbose
