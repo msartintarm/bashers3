@@ -7,6 +7,7 @@ LDFLAGS = -Wall -Werror
 #LDLIBS=$(shell root-config --libs)
 PROG=raidsim
 RAID0=zeroTest
+RAID4=fourTest
 
 all: prog
 
@@ -16,6 +17,10 @@ prog: $(OBJS) $(PROG).c
 raid0: $(OBJS) $(RAID0).o
 	gcc $(LDFLAGS) -o $(RAID0) $(OBJS) $(RAID0).o $(LDLIBS) 
 	./$(RAID0) 1 1 0 1 
+
+raid4: $(OBJS) $(RAID4).o
+	gcc $(LDFLAGS) -o $(RAID4) $(OBJS) $(RAID4).o $(LDLIBS) 
+	./$(RAID4) 1 1 0 1 
 
 run: prog
 	./$(PROG) -level 0 -strip 1 -disks 1 -size 1 -trace sampleTrace.txt -verbose
@@ -27,12 +32,12 @@ valgrind: $(OBJS)
 
 depend: .depend
 
-.depend: $(SRCS) $(PROG).c $(RAID0).c
+.depend: $(SRCS) $(PROG).c $(RAID0).c $(RAID4).c
 	rm -f ./.depend
 	$(CXX) $(CPPFLAGS) -MM $^>>./.depend;
 
 clean:
-	$(RM) $(OBJS) $(OBJS2)
+	$(RM) $(OBJS)
 
 dist-clean: clean
 	$(RM) *~ .dependtool

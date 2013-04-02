@@ -8,9 +8,16 @@
  * Then read/write can just iterate without knowing anything about disk structure
  */ 
 
-int strip;
-int disk;
+int _strip;
+int _disk;
 char buffer[BLOCK_SIZE];
+static disk_array_t _da;
+
+void zeroInit(disk_array_t da, int strip, int disk) {
+  _da = da;
+  _strip = strip;
+  _disk = disk;
+}
 
 /*RAID 0
 *
@@ -25,7 +32,7 @@ char buffer[BLOCK_SIZE];
 /**
  * yeah I went there. Strip those disks!
  */
-static int stripper(disk_array_t da, int size, int lba, char* value, short isWrite) {
+static int stripper(int size, int lba, char* value, short isWrite) {
   int rc = 0;
   short startFound = 0;
   int diskIndex  = 0;
@@ -40,22 +47,22 @@ static int stripper(disk_array_t da, int size, int lba, char* value, short isWri
     }
     if(startFound == 1){
       if(isWrite == 1){
-	      disk_array_write(da, diskIndex, blockIndex, value);
+	      disk_array_write(_da, diskIndex, blockIndex, value);
         printf("Writing [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
       }
       //Read operation
       else {
-        disk_array_read(da, diskIndex, blockIndex, buffer);
+        disk_array_read(_da, diskIndex, blockIndex, buffer);
         printf("Reading [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
       }
     }
     
     //if reached end of strip change disk
-    if((strip-1) == stripIndex){
+    if((_strip-1) == stripIndex){
       //if reached last disk move back to disk 0
-      if(diskIndex == (disk-1)){
+      if(diskIndex == (_disk-1)){
         diskIndex = 0;
-        multiple += strip;
+        multiple += _strip;
         stripIndex = 0;
       }
       //not the last disk
@@ -74,27 +81,27 @@ static int stripper(disk_array_t da, int size, int lba, char* value, short isWri
     }
     
   }
-  diskIndex = diskIndex % disk;
+  diskIndex = diskIndex % _disk;
   //printf("Found: [%d,%d]\n", diskIndex, blockIndex);
   
   return rc;
 }
 
-int zeroRead(disk_array_t da, int size, int lba) {
+int zeroRead(int size, int lba) {
   int rc = 0;
-  rc = stripper(da, size, lba, NULL, 1);
+  rc = stripper(size, lba, NULL, 0);
   return rc;
 }
 
-int zeroWrite(disk_array_t da, int size, int lba, char* value) {
+int zeroWrite(int size, int lba, char* value) {
   int rc = 0;
-  rc = stripper(da, size, lba, value, 1);
+  rc = stripper(size, lba, value, 1);
   return rc;
 }
 
-int zeroFail(disk_array_t da, int failed_disk) {
+int zeroFail(int failed_disk) {
   int rc = 0;
-  rc = disk_array_fail_disk(da,failed_disk);
+  rc = disk_array_fail_disk(_da, failed_disk);
   return rc;
 }
 
