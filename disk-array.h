@@ -61,6 +61,10 @@ Close the virtual disk array.
 
 void disk_array_close( disk_array_t da );
 
+/*
+print number of reads and writes
+*/
 
+void disk_array_print_stats( disk_array_t da);
 
 #endif // DISK_ARRAY_H

@@ -44,4 +44,10 @@ Close the virtual disk.
 
 void disk_close( struct disk *d );
 
+/*
+print number of reads and writes
+*/
+
+void disk_print_stats( struct disk * d);
+
 #endif

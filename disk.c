@@ -20,6 +20,9 @@ struct disk {
 	int fd;
 	int block_size;
 	int nblocks;
+  // Stats
+  int nreads;
+  int nwrites;
 };
 
 struct disk * disk_open( const char *diskname, int nblocks )
@@ -59,6 +62,7 @@ void disk_write( struct disk *d, int block, const char *data )
 		fprintf(stderr,"disk_write: failed to write block #%d: %s\n",block,strerror(errno));
 		abort();
 	}
+	d->nwrites++;
 }
 
 void disk_read( struct disk *d, int block, char *data )
@@ -73,6 +77,7 @@ void disk_read( struct disk *d, int block, char *data )
 		fprintf(stderr,"disk_read: failed to read block #%d: %s\n",block,strerror(errno));
 		abort();
 	}
+	d->nreads++;
 }
 
 int disk_nblocks( struct disk *d )
@@ -84,4 +89,9 @@ void disk_close( struct disk *d )
 {
 	close(d->fd);
 	free(d);
+}
+
+void disk_print_stats( struct disk * d)
+{
+  printf("\t READS: %d\n\tWRITES: %d\n",d->nreads, d->nwrites);
 }

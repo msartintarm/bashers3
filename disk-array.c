@@ -37,7 +37,7 @@ disk_array_t disk_array_create( const char *filename,
     goto Cleanup;
   }
 
-  disk_array = malloc(sizeof(struct disk_array) + (disks) * sizeof(struct disk *));
+  disk_array = (disk_array_t) malloc(sizeof(struct disk_array) + (disks) * sizeof(struct disk *));
   if (disk_array == NULL) {
     goto Cleanup;
   }
@@ -186,3 +186,17 @@ int disk_array_recover_disk( disk_array_t da, int disk)
   return(-1);
 }
 
+
+void disk_array_print_stats( disk_array_t da)
+{
+  int i;
+  if (da != NULL) {
+    for (i = 0; i < da->ndisks; i ++) {
+      if (da->disks[i] != NULL) {
+	printf("STATS FOR DISK %d\n",i);
+	disk_print_stats(da->disks[i]);
+	da->disks[i] = 0;
+      }
+    }
+  }
+}
