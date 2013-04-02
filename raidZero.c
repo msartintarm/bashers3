@@ -105,9 +105,12 @@ int zeroFail(int failed_disk) {
   rc = disk_array_fail_disk(_da, failed_disk);
   return rc;
 }
+/**
+* Might want this?
+//clear out disk with zeroes
+int zeroRecover(int new_disk) {
+  int rc = 0;
+  rc = disk_array_recover_disk(_da,new_disk);
+  return rc;
+}*/
 
-
-//	      disk_array_recover_disk(da,failed_disk);
-//	      
-//	    if (disk_array_read(da, disk, block, buffer) == 0) {
-//	    disk_array_write(da, disk, block, buffer);

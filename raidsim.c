@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
 	  int block_num = atoi(strtok(NULL, " "));
 	  int block_size = atoi(strtok(NULL, " "));
 	  int value = atoi(strtok(NULL, " "));
-	  printd1(" int value to write is %d", value);
+	  //printd1(" int value to write is %d", value);
 	  raid_disk_array_write(block_num, block_size, value);
 
 	} else if(!strcmp(first_word, "FAIL")) {
