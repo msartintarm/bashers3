@@ -1,4 +1,5 @@
 #include "raidZero.h"
+#include "raid_handler.h"
 #include <stdio.h>
 #include <string.h>
 

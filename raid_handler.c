@@ -4,9 +4,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern int verbose;
 int raid_level;
-int disk;
-int strip;
+int _buff[BLOCK_SIZE / (sizeof(int) / sizeof(char))];
+
+void printd(char* str) {
+  if(verbose) printf(str);
+}
+void printd1(char* str, int arg1) {
+  if(verbose) printf(str, arg1);
+}
+void printd2(char* str, int arg1, int arg2) {
+  if(verbose) printf(str, arg1, arg2);
+}
 
 char* trimNewline(char* str) {
   
@@ -20,8 +30,10 @@ char* trimNewline(char* str) {
 }
 
 
+
 void raid_init(disk_array_t the_array, int the_level, int strip_, int disk_) {
   raid_level = the_level;
+
   switch(raid_level) {
     
   case 0:
@@ -38,10 +50,10 @@ void raid_disk_array_read(int block_num, int block_size) {
   switch(raid_level) {
 	
   case 0:
-    printf("Raid 0 read result: %d\n", zeroRead(block_size, block_num));
+    zeroRead(block_size, block_num);
     break;
   case 4:
-    printf("Raid 4 read result: %d\n", fourRead(block_size, block_num));
+    fourRead(block_size, block_num);
     break;
   default:
     ;
@@ -51,17 +63,22 @@ void raid_disk_array_read(int block_num, int block_size) {
 
 }
 
-void raid_disk_array_write(int block_num, int block_size, char* value) {
+int ii;
+
+void raid_disk_array_write(int block_num, int block_size, int value) {
   
-  trimNewline(value);
+  int numWrites = 0;
+  for(ii = 0; ii < sizeof(_buff) / sizeof(int); ++ii) {
+	_buff[ii] = value;
+	numWrites ++;
+  }
+
   switch(raid_level) {
   case 0:
-    printf("Raid 0 write result: %d\n", 
-	   zeroWrite(block_size, block_num, value));
+	zeroWrite(block_size, block_num, (char*)_buff);
     break;
   case 4:
-    printf("Raid 4 write result: %d\n", 
-	   fourWrite(block_size, block_num, value));
+	fourWrite(block_size, block_num, (char*)_buff);
     break;
   default:
     ;
@@ -75,27 +92,17 @@ void raid_disk_fail(int disk_num) {
   switch(raid_level) {
   case 0:
     rc = zeroFail(disk_num);
-    if(rc == 0){
-      printf("Disk %d failure.\n", disk_num);
-    }
-    else {
-      printf("Error failing disk %d\n", disk_num);
-    }
     break;
   case 4:
     rc = fourFail(disk_num);
-    if(rc == 0){
-      printf("Disk %d failure.\n", disk_num);
-    }
-    else {
-      printf("Error failing disk %d\n", disk_num);
-    }
     break;
   default:
-    ;
+    rc = 1;
     break;
   }
- 
+  if(rc != 0){
+	printf("Error failing disk %d\n", disk_num);
+  }
 }
 
 void raid_disk_recover(int disk_num) {

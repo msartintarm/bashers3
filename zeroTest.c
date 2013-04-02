@@ -24,7 +24,7 @@ int main( int argc, char *argv[] ) {
   int multiple = 0;
   int blockIndex = 0;
   //loop until address reached
-  for(i = 0; i < size; i++){
+  for(i = 0; i < size + lba; i++){
     if(i == lba){
       startFound = 1;
     }

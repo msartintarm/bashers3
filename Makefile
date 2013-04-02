@@ -11,16 +11,22 @@ RAID4=fourTest
 
 all: prog
 
-prog: $(OBJS) $(PROG).c
+prog: $(OBJS) $(PROG).o
 	gcc $(LDFLAGS) -o $(PROG) $(OBJS) $(PROG).o $(LDLIBS) 
 
 raid0: $(OBJS) $(RAID0).o
 	gcc $(LDFLAGS) -o $(RAID0) $(OBJS) $(RAID0).o $(LDLIBS) 
-	./$(RAID0) 1 1 0 1 
+	./$(RAID0) 2 2 0 2
+	./$(RAID0) 2 2 1 2
+	./$(RAID0) 2 2 2 2
+	./$(RAID0) 1 2 3 2
 
 raid4: $(OBJS) $(RAID4).o
 	gcc $(LDFLAGS) -o $(RAID4) $(OBJS) $(RAID4).o $(LDLIBS) 
-	./$(RAID4) 1 1 0 1 
+	./$(RAID4) 2 3 0 2
+	./$(RAID4) 2 3 1 2
+	./$(RAID4) 2 3 2 2
+	./$(RAID4) 1 3 3 2
 
 run: prog
 	./$(PROG) -level 0 -strip 1 -disks 1 -size 1 -trace sampleTrace.txt -verbose
