@@ -88,7 +88,7 @@ void raid_disk_array_write(int block_num, int block_size, int value) {
     tenWrite(block_size, block_num, (char*)_buff);
     break;
   case 4:
-	fourWrite(block_size, block_num, (char*)_buff);
+	  fourWrite(block_size, block_num, (char*)_buff);
     break;
   default:
     ;
@@ -120,7 +120,25 @@ void raid_disk_fail(int disk_num) {
 
 void raid_disk_recover(int disk_num) {
 
-  printf("Disk %d recovery.\n", disk_num);
+  int rc;
+  switch(raid_level) {
+  case 0:
+    //can't recover
+    rc = -1;
+    break;
+  case 10:
+    rc = tenRecover(disk_num);
+    break;
+  case 4:
+    //rc = fourRecover(disk_num);
+    break;
+  default:
+    rc = 1;
+    break;
+  }
+  if(rc != 0){
+	printf("Error recovering disk %d\n", disk_num);
+  }
 }
 
 

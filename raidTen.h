@@ -19,3 +19,5 @@ int tenWrite(int size, int lba, char* value);
 
 int tenFail(int failed_disk);
 
+int tenRecover(int new_disk);
+

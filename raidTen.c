@@ -100,6 +100,7 @@ static int stripper(int size, int lba, char* value, short isWrite) {
   return rc;
 }
 
+
 int tenRead(int size, int lba) {
   int rc = 0;
   rc = stripper(size, lba, NULL, 0);
@@ -125,9 +126,27 @@ int tenFail(int failed_disk) {
 **/
 int tenRecover(int new_disk) {
   int rc = 0;
+  short even = 0;
+  if((new_disk % 2) == 0) {
+    even = 1; //recover even disk
+  } 
   rc = disk_array_recover_disk(_da,new_disk);
   if(rc == 0) {
-    //TODO copy disk
+    int i;
+    //There are blocks/disks blocks on this disk
+    int blocks = disk_array_nblocks(_da)/disk_array_ndisks(_da);
+    for(i = 0; i < blocks; i++) {
+      if(even) {
+        disk_array_read(_da, new_disk+1, i, buffer); //mirror to the right
+        disk_array_write(_da, new_disk, i, buffer);
+      }
+      //odd
+      else {
+        disk_array_read(_da, new_disk-1, i, buffer); //mirror to the left
+        disk_array_write(_da, new_disk, i, buffer);
+      }
+      
+    }
   }
   return rc;
 }
