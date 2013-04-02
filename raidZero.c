@@ -41,7 +41,7 @@ static int stripper(int size, int lba, char* value, short isWrite) {
   int multiple   = 0; //used to move blocks to next set of strips
   int i;
   //loop until address reached
-  for(i = 0; i < size; i++){
+  for(i = 0; i < size + lba; i++){
     if(i == lba){
       startFound = 1;
     }
