@@ -94,8 +94,8 @@ int main(int argc, char *argv[]){
 
   while(fgets(one_line, 513, trace_file) != NULL) {
 
-    printd(" * ");
-    printd(one_line);
+	//    printd(" * ");
+    printf(one_line);
 
 	char* first_word = strtok(one_line, " ");
 
