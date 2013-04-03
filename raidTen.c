@@ -2,6 +2,7 @@
 #include "raid_handler.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 /* TODO We need to do some bookeeping right away.
  * Setup the disk structure before hand which will 
@@ -13,11 +14,18 @@ int _strip;
 int _disk;
 char buffer[BLOCK_SIZE];
 static disk_array_t _da;
+static int* disk_active; // 0 denotes the disk is failed
 
 void tenInit(disk_array_t da, int strip, int disk) {
   _da = da;
   _strip = strip;
   _disk = disk;
+  disk_active = malloc(_disk-1 * sizeof(int));
+  int i;
+  // All disks start out as active (not failed)
+  for(i = 0; i < _disk-1; ++i) {
+    disk_active[i] = 1;
+  }
 }
 
 /*RAID 0
@@ -48,17 +56,22 @@ static int stripper(int size, int lba, char* value, short isWrite) {
     }
     if(startFound == 1){
       if(isWrite == 1){
-	      disk_array_write(_da, diskIndex, blockIndex, value);
-	      disk_array_write(_da, diskIndex+1, blockIndex, value); //mirror disk
+        if(!disk_active[diskIndex]) {
+          disk_array_write(_da, diskIndex+1, blockIndex, value); //first disk bad write to mirror
+        }
+        else {
+	        disk_array_write(_da, diskIndex, blockIndex, value);
+	        disk_array_write(_da, diskIndex+1, blockIndex, value); //mirror disk
+	      }
       }
       //Read operation
       else {
         disk_array_read(_da, diskIndex, blockIndex, buffer);
-	printf("%d\n", *((int*)buffer));
+	      printf("%d\n", *((int*)buffer));
         //If that disk is failed try its mirror
-        if(strcmp(buffer, "ERROR") == 0) { //is this right?
+        if(!disk_active[diskIndex]) { //is this right?
           disk_array_read(_da, diskIndex+1, blockIndex, buffer);
-	  printf("%d\n", *((int*)buffer));
+	        printf("%d\n", *((int*)buffer));
         }
       }
     }
@@ -108,6 +121,7 @@ int tenWrite(int size, int lba, char* value) {
 
 int tenFail(int failed_disk) {
   int rc = 0;
+  disk_active[failed_disk] = 0;
   rc = disk_array_fail_disk(_da, failed_disk);
   return rc;
 }
@@ -119,6 +133,7 @@ int tenFail(int failed_disk) {
 **/
 int tenRecover(int new_disk) {
   int rc = 0;
+  disk_active[new_disk] = 1;
   //find which pair to replace
   short even = -1;
   if((new_disk % 2) == 0) {
