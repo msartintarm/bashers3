@@ -105,7 +105,7 @@ static int stripper(int size, int lba, char* value, short isWrite) {
 	disk_array_read(disk_arr, disk_num, block_offset, buffer);
 	printf("%d\n", *((int*)buffer));
       } else {
-	printd1("Reconstructing data for disk %d from parity.\n", disk_num);
+		printd2("Reconstructing disk %d index %d from parity.\n", disk_num, block_offset);
 	disk_array_read(disk_arr, parity_disk, block_offset, (char*)parityBuff);
 	int j;
 	for(j = 0; j < num_disks; ++j) {
@@ -113,14 +113,23 @@ static int stripper(int size, int lba, char* value, short isWrite) {
 	    disk_array_read(disk_arr, j, block_offset, buffer);
 	    parityBuff[0] ^= *(int*)buffer;
 	}
-	printf("%d\n", *((int*)parityBuff));
+	printd2("Reconstruction result: *", disk_num, block_offset);
+	printf("%d", *((int*)parityBuff));
+	printd("*");
+	printf("\n");
       }
     }
     // Compute new index
     if(++block_offset % strip_size == 0) {
-      block_offset -= strip_size;
-	  disk_num += 1;
-	  disk_num %= num_disks;
+	  // Iterate disk!
+	  if(++disk_num % num_disks == 0) {
+		// New set of indexes!
+		disk_num = 0;
+		disk_num %= num_disks;
+	  } else {
+		// Otherwise, keep same index set
+		block_offset -= strip_size;
+	  }
     }
   }
   
@@ -141,9 +150,11 @@ int fourFail(int failed_disk) {
 }
 
 int fourRecover(int recovered_disk) {
+
+  int rv = disk_array_recover_disk(disk_arr, recovered_disk);
   disk_active[recovered_disk] = 1;
   restoredParity(recovered_disk);
-  return disk_array_recover_disk(disk_arr, recovered_disk);
+  return rv;
 }
 
 //static void newParity(int disk_index) {
