@@ -71,6 +71,8 @@ void fourInit(disk_array_t da, int strip_size_,
   // If it DOES need to be init-ed, use newParity().
 }
 
+void fourCleanup() { free(disk_active); }
+
 /**
  * yeah I went there. Strip those disks!
  */
@@ -89,16 +91,16 @@ static int stripper(int size, int lba, char* value, short isWrite) {
 
   for(i = 0; i < size; ++i) {
 
-    if(isWrite == 1){
+    if(isWrite == 1){ // Write operation
       if(!disk_active[disk_num]) {
-	printf("ERROR"); 
-	continue;
-      }
-
-      // First read the old data and parity
-      disk_array_read(disk_arr, disk_num, block_offset, buffer);
-      subtractiveParity(disk_num, block_offset, buffer, value);
-      disk_array_write(disk_arr, disk_num, block_offset, value);
+		printd1("Can't write to failed disk %d - ", disk_num);
+		printf("ERROR\n"); 
+      } else {
+		// Read old data, update parity, and write new data
+		disk_array_read(disk_arr, disk_num, block_offset, buffer);
+		subtractiveParity(disk_num, block_offset, buffer, value);
+		disk_array_write(disk_arr, disk_num, block_offset, value);
+	  }
 
     } else { //Read operation
       if(disk_active[disk_num]) {

@@ -81,6 +81,8 @@ int main(int argc, char *argv[]){
 	}
 
 	raid_init(da, level, strip, disks, size);
+	// Automatic garbage collection
+	atexit(raid_cleanup);
 
   FILE* trace_file = fopen(trace, "r");
   if(trace_file == NULL){

@@ -145,4 +145,12 @@ void raid_disk_recover(int disk_num) {
   }
 }
 
-
+void raid_cleanup() {
+  switch(raid_level) {
+  case 4:
+    fourCleanup();
+    break;
+  default:
+    break;
+  }
+}

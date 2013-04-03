@@ -4,6 +4,7 @@
 void raid_init(disk_array_t the_array, 
 	       int the_level, 
 	       int strip_size, int num_disks, int disk_size);
+void raid_cleanup();
 
 void raid_disk_array_read(int block_num, int block_size);
 void raid_disk_array_write(int block_num, int block_size, int value);
