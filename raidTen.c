@@ -126,27 +126,35 @@ int tenFail(int failed_disk) {
 **/
 int tenRecover(int new_disk) {
   int rc = 0;
-  short even = 0;
+  //find which pair to replace
+  short even = -1;
   if((new_disk % 2) == 0) {
-    even = 1; //recover even disk
+    even = 1; //recover even/left disk
   } 
   rc = disk_array_recover_disk(_da,new_disk);
   if(rc == 0) {
     int i;
-    //There are blocks/disks blocks on this disk
-    int blocks = disk_array_nblocks(_da)/disk_array_ndisks(_da);
-    for(i = 0; i < blocks; i++) {
-      if(even) {
-        disk_array_read(_da, new_disk+1, i, buffer); //mirror to the right
+    int blocks = disk_array_nblocks(_da)/_disk; //default case where blocks split evenly
+    //do the blocks split evenly?
+    int rem_blocks = disk_array_nblocks(_da) % _disk;
+    //if true then there is a remainder of blocks on the last disk
+    //write to portion ignoring fragment at the end
+    if(rem_blocks != 0 && ((new_disk == _disk-1) || (new_disk == _disk-2))) {
+      //printf("remaining portion: %d %d %d\n", rem_blocks, _disk, new_disk);
+      for(i = 0; i < rem_blocks; i++) {
+        disk_array_read(_da, new_disk+even, i, buffer); 
         disk_array_write(_da, new_disk, i, buffer);
       }
-      //odd
-      else {
-        disk_array_read(_da, new_disk-1, i, buffer); //mirror to the left
-        disk_array_write(_da, new_disk, i, buffer);
-      }
-      
     }
+    //standard case
+    else {
+      //printf("normal disk: rem%d block%d\n", rem_blocks, blocks);
+      for(i = 0; i < blocks; i++) {
+        disk_array_read(_da, new_disk+even, i, buffer); 
+        disk_array_write(_da, new_disk, i, buffer);
+      }
+    }
+    
   }
   return rc;
 }
