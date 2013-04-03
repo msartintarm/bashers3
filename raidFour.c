@@ -47,6 +47,17 @@ static int* disk_active; // 0 denotes the disk is failed
  */
 static void subtractiveParity(int disk_num, int block_offset,
 			      char* oldData, char* newData);
+
+/**
+  Updates parity block using the additive technique.
+
+  The disk number is the one for which the new data is passed. 
+  It's never accessed or read (all others are).
+
+  This is because we use it in the case where the disk is invalid.
+ */
+static void additiveParity(int disk_num, int block_offset,
+						   char* newData);
 /**
    If a disk is restored, its contents will be zeroed out and
    hence, we must redetermine the data using additive parity.
@@ -89,12 +100,13 @@ static int stripper(int size, int lba, char* value, short isWrite) {
   printd1(" Block address: %d\n", lba);
   printd2(" Starting block offset: %d, disk Num: %d\n", block_offset, disk_num);
 
+
   for(i = 0; i < size; ++i) {
 
     if(isWrite == 1){ // Write operation
       if(!disk_active[disk_num]) {
-		printd1("Can't write to failed disk %d - ", disk_num);
-		printf("ERROR\n"); 
+		printd1("Can't write to failed disk %d\n", disk_num);
+		additiveParity(disk_num, block_offset, value);
       } else {
 		// Read old data, update parity, and write new data
 		disk_array_read(disk_arr, disk_num, block_offset, buffer);
@@ -134,7 +146,6 @@ static int stripper(int size, int lba, char* value, short isWrite) {
 	  }
     }
   }
-  
   return 0;
 }
 
@@ -181,6 +192,24 @@ static void subtractiveParity(int disk_num, int block_offset,
 
   printd1("to %d.\n", parityBuff[0]);
 
+  disk_array_write(disk_arr, parity_disk, block_offset, (char*)parityBuff);
+}
+
+static void additiveParity(int disk_num, int block_offset,
+						   char* newData) {
+  int ii;
+  // Don't need to read parity disk - instead, set to 0.
+  *parityBuff = 0;
+  for(ii = 0; ii < num_disks; ++ii) {
+	if(ii == disk_num) continue; // This is always 0.
+	disk_array_read(disk_arr, ii, block_offset, buffer);
+	*parityBuff ^= *(int*)buffer;
+  }
+
+  // Finally, XOR the new data (that we would write to the disk if we could).
+  *parityBuff ^= *(int*)newData;
+  
+  printd2("Disk %d index %d has failed, so we updated parity.\n", disk_num, block_offset);
   disk_array_write(disk_arr, parity_disk, block_offset, (char*)parityBuff);
 }
 
