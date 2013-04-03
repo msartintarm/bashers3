@@ -3,8 +3,8 @@
 /**
  * Initialize things RAID needs for every call.
  */
-void fourInit(disk_array_t da, int num_disks_,
-	      int strip_size_);
+void fourInit(disk_array_t da, int num_disks,
+	      int strip_size, int disk_size);
 /**
  * Read starting at block LBA for SIZE blocks.
  * Then print out the first 4 byte value in each block. 
