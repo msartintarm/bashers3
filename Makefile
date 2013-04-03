@@ -17,6 +17,9 @@ prog: $(OBJS) $(PROG).o
 raid4fail: prog
 	./$(PROG) -level 4 -strip 3 -disks 4 -size 6 -trace traces/diskFail.txt -verbose
 
+raid4recover: prog
+	./$(PROG) -level 4 -strip 3 -disks 4 -size 6 -trace traces/diskRestore.txt -verbose
+
 raid0: $(OBJS) $(RAID0).o
 	gcc $(LDFLAGS) -o $(RAID0) $(OBJS) $(RAID0).o $(LDLIBS) 
 	./$(RAID0) 2 2 0 2
