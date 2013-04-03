@@ -31,6 +31,7 @@ static int disk_size;
 static char buffer[BLOCK_SIZE];
 static int parityBuff[BLOCK_SIZE];
 static int* disk_active; // 0 denotes the disk is failed
+static void newParity(int disk_index);
 
 void fourInit(disk_array_t da, int strip_size_,
 	      int num_disks_, int disk_size_) {
@@ -47,6 +48,27 @@ void fourInit(disk_array_t da, int strip_size_,
   // One thing we do NOT do here: initialize parity disk.
   //  Why? Because all data (and hence parity) is 0 to 
   //  startout with. No need.
+
+  printd("Begin parity initialization.\n");
+  for(i = 0; i < disk_size; ++i) {
+    newParity(i);
+  }
+  printd("End parity initialization.\n");
+}
+
+/*
+ * Given a disk index, looks up data and writes parity.
+ * Note that this cannot be used if a disk has failed.
+ */
+static void newParity(int disk_index) {
+  int ii;
+
+  *parityBuff = 0;
+  for(ii = 0; ii < num_disks; ++ii) {
+    disk_array_read(disk_arr, ii, disk_index, buffer);
+    *parityBuff ^= *(int*)buffer;
+  }
+  disk_array_write(disk_arr, parity_disk, disk_index, (char*)parityBuff);
 }
 
 /**
@@ -76,26 +98,30 @@ static int stripper(int size, int lba, char* value, short isWrite) {
       disk_array_read(disk_arr, disk_num, block_offset, buffer);
       disk_array_read(disk_arr, parity_disk, block_offset, (char*)parityBuff);
 
+      printd1(" Parity bit: %d.\n", *parityBuff);
+
       parityBuff[0] ^= *(int*)buffer; // Remove old data from parity
       parityBuff[0] ^= *(int*)value; // Add new data to parity
+
+      printd1(" Parity bit: %d.\n", parityBuff[0]);
 
       disk_array_write(disk_arr, disk_num, block_offset, value);
       disk_array_write(disk_arr, parity_disk, block_offset, (char*)parityBuff);
 
     } else { //Read operation
-      if(!disk_active[disk_num]) {
+      if(disk_active[disk_num]) {
+	disk_array_read(disk_arr, disk_num, block_offset, buffer);
+	printf("%d\n", *((int*)buffer));
+      } else {
 	printd1("Reconstructing data for disk %d from parity.\n", disk_num);
 	disk_array_read(disk_arr, parity_disk, block_offset, (char*)parityBuff);
 	int j;
 	for(j = 0; j < num_disks; ++j) {
-	  if(!disk_active[disk_num]) continue;
-	    disk_array_read(disk_arr, disk_num, block_offset, buffer);
+	  if(!disk_active[j]) continue;
+	    disk_array_read(disk_arr, j, block_offset, buffer);
 	    parityBuff[0] ^= *(int*)buffer;
-      printf("%d\n", *((int*)parityBuff));
 	}
-      } else {
-	disk_array_read(disk_arr, disk_num, block_offset, buffer);
-	printf("%d\n", *((int*)buffer));
+	printf("%d\n", *((int*)parityBuff));
       }
     }
     // Compute new index
