@@ -20,6 +20,7 @@
                 block 1 XOR block 4 XOR block 7, 
                 block 2 XOR block 5 XOR block 8 etc.*/
 
+// -- Local variables -- //
 
 static int i;
 static disk_array_t disk_arr;
@@ -31,7 +32,26 @@ static int disk_size;
 static char buffer[BLOCK_SIZE];
 static int parityBuff[BLOCK_SIZE];
 static int* disk_active; // 0 denotes the disk is failed
+
+// -- Local functions ('methods') -- //
+
+/**
+  Given a disk index, looks up data and writes parity.
+  Note that this cannot be used if a disk has failed.
+*/
 // static void newParity(int disk_index);
+
+/**
+  Updates parity for a single block 
+  using the subtractive technique.
+ */
+static void subtractiveParity(int disk_num, int block_offset,
+			      char* oldData, char* newData);
+/**
+   If a disk is restored, its contents will be zeroed out and
+   hence, we must redetermine the data using additive parity.
+*/
+static void restoredParity(int restored_disk);
 
 void fourInit(disk_array_t da, int strip_size_,
 	      int num_disks_, int disk_size_) {
@@ -48,59 +68,7 @@ void fourInit(disk_array_t da, int strip_size_,
   // One thing we do NOT do here: initialize parity disk.
   //  Why? Because all data (and hence parity) is 0 to 
   //  startout with. No need.
-}
-
-/**
-  But here's a method we can use in case it DOES
-  need to be init'ed.
-  
-  Given a disk index, looks up data and writes parity.
-  Note that this cannot be used if a disk has failed.
-*/
-//static void newParity(int disk_index) {
-//  int ii;
-//
-//  *parityBuff = 0;
-//  for(ii = 0; ii < num_disks; ++ii) {
-//    disk_array_read(disk_arr, ii, disk_index, buffer);
-//    *parityBuff ^= *(int*)buffer;
-//  }
-//    disk_array_write(disk_arr, parity_disk, disk_index, (char*)parityBuff);
-//}
-
-/**
-  Updates parity for a single block 
-  using the subtractive technique.
- */
-static void subtractiveParity(int disk_num, int block_offset,
-			      char* oldData, char* newData) {
-  // Obtain the old parity
-  disk_array_read(disk_arr, parity_disk, block_offset, (char*)parityBuff);
-  printd1(" Parity bit: from %d ", *parityBuff);
-
-  parityBuff[0] ^= *(int*)oldData; // Remove old data from parity
-  parityBuff[0] ^= *(int*)newData; // Add new data to parity
-
-  printd1("to %d.\n", parityBuff[0]);
-
-  disk_array_write(disk_arr, parity_disk, block_offset, (char*)parityBuff);
-}
-
-/**
-   Just calls an above method, using data we know
-   to be true if a disk has been restored.
-*/
-static void restoredParity(int restored_disk) {
-  int k, ii;
-  for(k = 0; k < disk_size; ++k) {
-    *parityBuff = 0;
-    for(ii = 0; ii < num_disks; ++ii) {
-      if(ii == restored_disk) continue; // This is always 0.
-      disk_array_read(disk_arr, ii, k, buffer);
-      *parityBuff ^= *(int*)buffer;
-    }
-    disk_array_write(disk_arr, parity_disk, k, (char*)parityBuff);
-  }
+  // If it DOES need to be init-ed, use newParity().
 }
 
 /**
@@ -176,5 +144,46 @@ int fourRecover(int recovered_disk) {
   disk_active[recovered_disk] = 1;
   restoredParity(recovered_disk);
   return disk_array_recover_disk(disk_arr, recovered_disk);
+}
+
+//static void newParity(int disk_index) {
+//  int ii;
+//
+//  *parityBuff = 0;
+//  for(ii = 0; ii < num_disks; ++ii) {
+//    disk_array_read(disk_arr, ii, disk_index, buffer);
+//    *parityBuff ^= *(int*)buffer;
+//  }
+//    disk_array_write(disk_arr, parity_disk, disk_index, (char*)parityBuff);
+//}
+
+static void subtractiveParity(int disk_num, int block_offset,
+			      char* oldData, char* newData) {
+  // Obtain the old parity
+  disk_array_read(disk_arr, parity_disk, block_offset, (char*)parityBuff);
+  printd2(" Parity bit for index %d: from %d ", block_offset, *parityBuff);
+
+  parityBuff[0] ^= *(int*)oldData; // Remove old data from parity
+  parityBuff[0] ^= *(int*)newData; // Add new data to parity
+
+  printd1("to %d.\n", parityBuff[0]);
+
+  disk_array_write(disk_arr, parity_disk, block_offset, (char*)parityBuff);
+}
+
+static void restoredParity(int restored_disk) {
+  int k, ii;
+  for(k = 0; k < disk_size; ++k) {
+    disk_array_read(disk_arr, parity_disk, k, (char*)parityBuff);
+    for(ii = 0; ii < num_disks; ++ii) {
+      if(ii == restored_disk) continue; // This is always 0.
+      disk_array_read(disk_arr, ii, k, buffer);
+      *parityBuff ^= *(int*)buffer;
+    }
+    // Parity XOR'ed with everything other than the data.. yields the data.
+    printd2("Disk %d index %d", restored_disk, k);
+    printd1(" recovered with data %d.\n", parityBuff[0]);
+    disk_array_write(disk_arr, restored_disk, k, (char*)parityBuff);
+  }
 }
 
