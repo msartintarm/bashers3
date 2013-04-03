@@ -28,6 +28,8 @@ void tenInit(disk_array_t da, int strip, int disk) {
   }
 }
 
+void tenCleanup() { free(disk_active); }
+
 /*RAID 0
 *
  Blocks should be striped across disks, starting with the lowest numbered disk and increasing.

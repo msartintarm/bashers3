@@ -21,3 +21,5 @@ int tenFail(int failed_disk);
 
 int tenRecover(int new_disk);
 
+void tenCleanup();
+

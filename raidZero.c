@@ -28,6 +28,8 @@ void zeroInit(disk_array_t da, int strip, int disk) {
   }
 }
 
+void zeroCleanup() { free(disk_active); }
+
 /*RAID 0
 *
  Blocks should be striped across disks, starting with the lowest numbered disk and increasing.
@@ -57,24 +59,28 @@ static int stripper(int size, int lba, char* value, short isWrite) {
     }
     if(startFound == 1){
       if(isWrite == 1){
-        if(!disk_active[diskIndex]) {
+      
+        if(disk_active[diskIndex] == 0) {
           write_error = 1;
         }
         else {
-          if(!disk_active[diskIndex]) {
-            printf("ERROR \n");
-          }
-          else {
-	          disk_array_write(_da, diskIndex, blockIndex, value);
-            //printf("Writing [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
-          }
+          disk_array_write(_da, diskIndex, blockIndex, value);
+          //printf("Writing [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
         }
+        
       }
       //Read operation
       else {
-        disk_array_read(_da, diskIndex, blockIndex, buffer);
-	      printf("%d\n", *((int*)buffer));
-        //printf("Reading [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
+      
+        if(!disk_active[diskIndex]) {
+          printf("ERROR \n");
+        }
+        else {
+          disk_array_read(_da, diskIndex, blockIndex, buffer);
+	        printf("%d\n", *((int*)buffer));
+          //printf("Reading [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
+        }
+        
       }
     }
     
@@ -130,13 +136,12 @@ int zeroFail(int failed_disk) {
   rc = disk_array_fail_disk(_da, failed_disk);
   return rc;
 }
-/**
-* Might want this?
+
 //clear out disk with zeroes
 int zeroRecover(int new_disk) {
   int rc = 0;
-  disk_active[new_disk] = 1;
+  disk_active[new_disk] = -1;
   rc = disk_array_recover_disk(_da,new_disk);
   return rc;
-}*/
+}
 

@@ -150,6 +150,12 @@ void raid_cleanup() {
   case 4:
     fourCleanup();
     break;
+  case 0:
+    zeroCleanup();
+    break;
+  case 10:
+    tenCleanup();
+    break;
   default:
     break;
   }
