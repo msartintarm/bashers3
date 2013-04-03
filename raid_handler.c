@@ -32,19 +32,23 @@ char* trimNewline(char* str) {
 
 
 
-void raid_init(disk_array_t the_array, int the_level, int strip_, int disk_) {
+void raid_init(disk_array_t the_array, 
+	       int the_level, 
+	       int strip_size, 
+	       int num_disks,
+	       int disk_size) {
   raid_level = the_level;
 
   switch(raid_level) {
     
   case 0:
-    zeroInit(the_array, strip_, disk_);
+    zeroInit(the_array, strip_size, num_disks);
     break;
   case 10:
-    tenInit(the_array, strip_, disk_);
+    tenInit(the_array, strip_size, num_disks);
     break;
   case 4:
-    fourInit(the_array, strip_, disk_);
+    fourInit(the_array, strip_size, num_disks, disk_size);
     break;
   }
 }

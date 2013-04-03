@@ -80,7 +80,7 @@ int main(int argc, char *argv[]){
 		return 1;
 	}
 
-	raid_init(da, level, strip, disks);
+	raid_init(da, level, strip, disks, size);
 
   FILE* trace_file = fopen(trace, "r");
   if(trace_file == NULL){
