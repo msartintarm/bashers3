@@ -48,13 +48,14 @@ static int stripper(int size, int lba, char* value, short isWrite) {
     }
     if(startFound == 1){
       if(isWrite == 1){
-	      disk_array_write(_da, diskIndex, blockIndex, value);
-        printf("Writing [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
+	disk_array_write(_da, diskIndex, blockIndex, value);
+        //printf("Writing [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
       }
       //Read operation
       else {
         disk_array_read(_da, diskIndex, blockIndex, buffer);
-        printf("Reading [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
+	printf("%d\n", *((int*)buffer));
+        //printf("Reading [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
       }
     }
     

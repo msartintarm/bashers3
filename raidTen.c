@@ -50,23 +50,16 @@ static int stripper(int size, int lba, char* value, short isWrite) {
       if(isWrite == 1){
 	      disk_array_write(_da, diskIndex, blockIndex, value);
 	      disk_array_write(_da, diskIndex+1, blockIndex, value); //mirror disk
-	      /**if(verbose){
-            printf("Writing [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
-           }**/
       }
       //Read operation
       else {
         disk_array_read(_da, diskIndex, blockIndex, buffer);
+	printf("%d\n", *((int*)buffer));
         //If that disk is failed try its mirror
         if(strcmp(buffer, "ERROR") == 0) { //is this right?
           disk_array_read(_da, diskIndex+1, blockIndex, buffer);
-          /**if(verbose){
-              printf("Error reading disk %d. Reading from mirror disk.\nReading [disk,block]: [%d,%d]\n", diskIndex, diskIndex+1, blockIndex);
-            }**/
+	  printf("%d\n", *((int*)buffer));
         }
-        /**else {
-          printf("Reading [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
-        }**/
       }
     }
     
