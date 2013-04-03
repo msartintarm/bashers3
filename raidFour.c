@@ -49,30 +49,6 @@ void fourInit(disk_array_t da, int strip_size_,
   //  startout with. No need.
 }
 
-/*
-static int checksum(int* integers) {
-
-  int theSum = integers[0];
-  // Compute XOR of all integers
-  for(i = 1; i < num_disks; ++i) {
-	theSum ^= integers[i];
-  }
-  //      disk_array_write(disk_arr, disk_num, block_offset, value);
-  return theSum;
-}
-
-static int writeParityDisk() {
-
-  int integers[block_size - 1];
-
-  for(i = 0; i < asd; ++i) {
-	for(j = 0; i < asd; ++i) {
-	  integers[j] = read(disk_arr, i, j);
-	}
-	write(block_size - 1, i, checksum(integers));
-  }
-}
-*/
 /**
  * yeah I went there. Strip those disks!
  */
@@ -89,7 +65,7 @@ static int stripper(int size, int lba, char* value, short isWrite) {
   printd1(" Block address: %d\n", lba);
   printd2(" Starting block offset: %d, disk Num: %d\n", block_offset, disk_num);
 
-  for(i = 0; i < strip_size; ++i) {
+  for(i = 0; i < size; ++i) {
 
     if(isWrite == 1){
       if(!disk_active[disk_num]) {
@@ -108,7 +84,7 @@ static int stripper(int size, int lba, char* value, short isWrite) {
 
     } else { //Read operation
       if(!disk_active[disk_num]) {
-	// We can compute the required data from parity.
+	printd1("Reconstructing data for disk %d from parity.\n", disk_num);
 	disk_array_read(disk_arr, parity_disk, block_offset, (char*)parityBuff);
 	int j;
 	for(j = 0; j < num_disks; ++j) {

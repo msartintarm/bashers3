@@ -14,6 +14,9 @@ all: prog
 prog: $(OBJS) $(PROG).o
 	gcc $(LDFLAGS) -o $(PROG) $(OBJS) $(PROG).o $(LDLIBS) 
 
+raid4test1: prog
+	./$(PROG) -level 4 -strip 3 -disks 4 -size 6 -trace traces/diskFail.txt -verbose
+
 raid0: $(OBJS) $(RAID0).o
 	gcc $(LDFLAGS) -o $(RAID0) $(OBJS) $(RAID0).o $(LDLIBS) 
 	./$(RAID0) 2 2 0 2
