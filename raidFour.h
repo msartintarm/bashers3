@@ -18,4 +18,4 @@ int fourRead(int size, int lba);
 int fourWrite(int size, int lba, char* value);
 
 int fourFail(int failed_disk);
-
+int fourRecover(int recovered_disk);

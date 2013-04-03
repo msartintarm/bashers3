@@ -76,12 +76,12 @@ static void subtractiveParity(int disk_num, int block_offset,
 			      char* oldData, char* newData) {
   // Obtain the old parity
   disk_array_read(disk_arr, parity_disk, block_offset, (char*)parityBuff);
-  printd1(" Parity bit: %d.\n", *parityBuff);
+  printd1(" Parity bit: from %d ", *parityBuff);
 
   parityBuff[0] ^= *(int*)oldData; // Remove old data from parity
   parityBuff[0] ^= *(int*)newData; // Add new data to parity
 
-  printd1(" Parity bit: %d.\n", parityBuff[0]);
+  printd1("to %d.\n", parityBuff[0]);
 
   disk_array_write(disk_arr, parity_disk, block_offset, (char*)parityBuff);
 }

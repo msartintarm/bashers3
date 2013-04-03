@@ -134,14 +134,14 @@ void raid_disk_recover(int disk_num) {
     rc = tenRecover(disk_num);
     break;
   case 4:
-    //rc = fourRecover(disk_num);
+    rc = fourRecover(disk_num);
     break;
   default:
     rc = 1;
     break;
   }
   if(rc != 0){
-	printf("Error recovering disk %d\n", disk_num);
+	printd1("Error recovering disk %d\n", disk_num);
   }
 }
 
