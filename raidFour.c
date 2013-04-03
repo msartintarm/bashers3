@@ -139,7 +139,6 @@ static int stripper(int size, int lba, char* value, short isWrite) {
 	  if(++disk_num % num_disks == 0) {
 		// New set of indexes!
 		disk_num = 0;
-		disk_num %= num_disks;
 	  } else {
 		// Otherwise, keep same index set
 		block_offset -= strip_size;
