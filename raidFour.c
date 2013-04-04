@@ -22,7 +22,6 @@
 
 // -- Local variables -- //
 
-static int i;
 static disk_array_t disk_arr;
 static int num_disks;   // Does NOT include parity
 // Note that the disk count is the same as the parity ID
@@ -61,8 +60,14 @@ static void additiveParity(int disk_num, int block_offset,
 /**
    If a disk is restored, its contents will be zeroed out and
    hence, we must redetermine the data using additive parity.
-*/
+ */
 static void restoredParity(int restored_disk);
+
+/**
+   Writes to a full stripe. It doesn't matter if a block is invalid.
+ */
+static void writeStripe(int block_offset, char* data);
+
 
 void fourInit(disk_array_t da, int strip_size_,
 	      int num_disks_, int disk_size_) {
@@ -72,6 +77,7 @@ void fourInit(disk_array_t da, int strip_size_,
   disk_size = disk_size_;
   disk_active = malloc(num_disks * sizeof(int));
   // All disks start out as active (not failed)
+  int i;
   for(i = 0; i < num_disks; ++i) {
     disk_active[i] = 1;
   }
@@ -100,17 +106,34 @@ static int stripper(int size, int lba, char* value, short isWrite) {
   printd1(" Block address: %d\n", lba);
   printd2(" Starting block offset: %d, disk Num: %d\n", block_offset, disk_num);
 
-
+  int i;
   for(i = 0; i < size; ++i) {
 
     if(isWrite == 1){ // Write operation
+
+	  // check whether we are on disk 0 
+	  if(disk_num == 0 &&
+		 // at the beginning of a stripe
+		 block_offset % strip_size == 0 &&
+		 // if so, check whether there are enough writes 
+		 // remaining to cover the whole stripe
+		 size - i >= num_disks * strip_size) {
+	  
+		writeStripe(block_offset, value);
+		
+		// The loop will also increment i
+		i += num_disks * strip_size - 1;
+		block_offset += strip_size;
+		continue;
+	  }
+
       if(!disk_active[disk_num]) {
 		printd1("Can't write to failed disk %d\n", disk_num);
 		additiveParity(disk_num, block_offset, value);
       } else {
 		// Read old data, update parity, and write new data
 		disk_array_read(disk_arr, disk_num, block_offset, buffer);
-		subtractiveParity(disk_num, block_offset, buffer, value);
+ 		subtractiveParity(disk_num, block_offset, buffer, value);
 		disk_array_write(disk_arr, disk_num, block_offset, value);
 	  }
 
@@ -229,3 +252,19 @@ static void restoredParity(int restored_disk) {
   }
 }
 
+static void writeStripe(int block_offset, char* data) {
+
+  printd2("Writing full stripe at block offsets %d to %d\n", block_offset, block_offset + strip_size - 1); 
+
+  int offset, disk;
+  for(offset = block_offset; offset < block_offset + strip_size; ++offset) {
+	*parityBuff = 0;
+	for(disk = 0; disk < num_disks; ++disk) {
+
+	  *parityBuff ^= *(int*)data;
+	  disk_array_write(disk_arr, disk, offset, data);
+	}
+  }
+  disk_array_write(disk_arr, parity_disk, offset, (char*)parityBuff);
+
+}

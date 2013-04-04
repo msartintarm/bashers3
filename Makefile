@@ -32,6 +32,9 @@ raid5recover: prog
 raid4recover2: prog
 	./$(PROG) -level 4 -strip 3 -disks 4 -size 6 -trace traces/diskRestoreFull.txt -verbose
 
+raid4stripe: prog
+	./$(PROG) -level 4 -strip 3 -disks 4 -size 15 -trace traces/fullStripe.txt -verbose
+
 raid0: $(OBJS) $(RAID0).o
 	gcc $(LDFLAGS) -o $(RAID0) $(OBJS) $(RAID0).o $(LDLIBS) 
 	./$(RAID0) 2 2 0 2
@@ -61,7 +64,7 @@ depend: .depend
 	$(CXX) $(CPPFLAGS) -MM $^>>./.depend;
 
 clean:
-	$(RM) $(OBJS) $(PROG) $(PROG).o
+	$(RM) $(OBJS) $(PROG) $(PROG).o myvirtualdisk-*
 
 dist-clean: clean
 	$(RM) *~ .dependtool
