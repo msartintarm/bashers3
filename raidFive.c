@@ -10,10 +10,8 @@
 
 // -- Local variables -- //
 
-static int i;
 static disk_array_t disk_arr;
 static int num_disks;
-#define num_disks
 static int strip_size;
 static int disk_size;
 static char buffer[BLOCK_SIZE];
@@ -53,6 +51,7 @@ void fiveInit(disk_array_t da, int strip_size_,
   disk_size = disk_size_;
   disk_active = malloc(num_disks * sizeof(int));
   // All disks start out as active (not failed)
+  int i;
   for(i = 0; i < num_disks; ++i) {
     disk_active[i] = 1;
   }
@@ -78,9 +77,12 @@ static int stripper(int size, int lba, char* value, short isWrite) {
   printd1(" Block address: %d\n", lba);
   printd2(" Starting block offset: %d, disk Num: %d\n", block_offset, disk_num);
 
-
+  int i;
   for(i = 0; i < size; ++i) {
-   
+    
+    //INSERT FULL STRIPE WRITE LOGIC HERE
+
+
     if(isWrite == 1){ // Write operation
       if(!disk_active[disk_num]) {
 	printd1("Can't write to failed disk %d\n", disk_num);
@@ -92,7 +94,6 @@ static int stripper(int size, int lba, char* value, short isWrite) {
 			 value, parity_disk);
 	disk_array_write(disk_arr, disk_num, block_offset, value);
       }
-
     } else { //Read operation
       if(disk_active[disk_num]) {
 	disk_array_read(disk_arr, disk_num, block_offset, buffer);
@@ -201,3 +202,4 @@ static void restoredParity(int restored_disk) {
   }
 }
 
+//FULL STRIPE WRTIE FUNCTION HERE

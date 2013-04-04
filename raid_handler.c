@@ -1,6 +1,7 @@
 #include "raidZero.h"
 #include "raidTen.h"
 #include "raidFour.h"
+#include "raidFive.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,6 +51,9 @@ void raid_init(disk_array_t the_array,
   case 4:
     fourInit(the_array, strip_size, num_disks, disk_size);
     break;
+  case 5:
+    fiveInit(the_array, strip_size, num_disks, disk_size);
+    break;
   }
 }
 
@@ -65,6 +69,9 @@ void raid_disk_array_read(int block_num, int block_size) {
     break;
   case 4:
     fourRead(block_size, block_num);
+    break;
+  case 5:
+    fiveRead(block_size, block_num);
     break;
   default:
     ;
@@ -94,6 +101,9 @@ void raid_disk_array_write(int block_num, int block_size, int value) {
   case 4:
 	  fourWrite(block_size, block_num, (char*)_buff);
     break;
+  case 5:
+    fiveWrite(block_size, block_num, (char*)_buff);
+    break;
   default:
     ;
     break;
@@ -112,6 +122,9 @@ void raid_disk_fail(int disk_num) {
     break;
   case 4:
     rc = fourFail(disk_num);
+    break;
+  case 5:
+    rc = fiveFail(disk_num);
     break;
   default:
     rc = 1;
@@ -135,6 +148,9 @@ void raid_disk_recover(int disk_num) {
   case 4:
     rc = fourRecover(disk_num);
     break;
+  case 5:
+    rc = fiveRecover(disk_num);
+    break;
   default:
     rc = 1;
     break;
@@ -154,6 +170,9 @@ void raid_cleanup() {
     break;
   case 10:
     tenCleanup();
+    break;
+  case 5:
+    fiveCleanup();
     break;
   default:
     break;

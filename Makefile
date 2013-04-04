@@ -1,6 +1,6 @@
 CXX=gcc
 RM=rm -f
-SRCS = disk-array.c disk.c raidZero.c raidFour.c raidTen.c raid_handler.c
+SRCS = disk-array.c disk.c raidZero.c raidFour.c raidFive.c raidTen.c raid_handler.c
 OBJS = $(SRCS:.c=.o)
 CPPFLAGS = -Wall -Werror -g
 LDFLAGS = -Wall -Werror 
@@ -17,8 +17,17 @@ prog: $(OBJS) $(PROG).o
 raid4fail: prog
 	./$(PROG) -level 4 -strip 3 -disks 4 -size 6 -trace traces/diskFail.txt -verbose
 
+raid5fail: prog
+	./$(PROG) -level 5 -strip 3 -disks 4 -size 6 -trace traces/diskFail.txt -verbose
+
+
 raid4recover: prog
 	./$(PROG) -level 4 -strip 3 -disks 4 -size 6 -trace traces/diskRestore.txt -verbose
+
+
+raid5recover: prog
+	./$(PROG) -level 5 -strip 3 -disks 4 -size 6 -trace traces/diskRestore.txt -verbose
+
 
 raid4recover2: prog
 	./$(PROG) -level 4 -strip 3 -disks 4 -size 6 -trace traces/diskRestoreFull.txt -verbose
