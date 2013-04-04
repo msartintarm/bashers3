@@ -264,7 +264,7 @@ static void writeStripe(int block_offset, char* data) {
 	  *parityBuff ^= *(int*)data;
 	  disk_array_write(disk_arr, disk, offset, data);
 	}
+	disk_array_write(disk_arr, parity_disk, offset, (char*)parityBuff);
   }
-  disk_array_write(disk_arr, parity_disk, offset, (char*)parityBuff);
 
 }
