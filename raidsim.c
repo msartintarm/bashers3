@@ -73,14 +73,8 @@ int main(int argc, char *argv[]){
   }
 
   // Input params have passed syntax checking - now init disks and RAID.
-  
-  disk_array_t da = disk_array_create("myvirtualdisk", disks, size);
-  if(!da) {
-	fprintf(stderr,"couldn't create virtual disk: %s\n",strerror(errno));
-	return 1;
-  }
 
-  raid_init(da, level, strip, disks, size);
+  raid_init(level, strip, disks, size);
   // Automatic garbage collection
   atexit(raid_cleanup);
 
@@ -127,10 +121,7 @@ int main(int argc, char *argv[]){
   }
   
   free(one_line);
-  disk_array_print_stats(da);
-
   fclose(trace_file);
-  disk_array_close(da);
   return 0;
 
 }

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 extern int verbose;
 int raid_level;
@@ -31,25 +32,31 @@ char* trimNewline(char* str) {
   return str;
 }
 
+static disk_array_t _da;
 
+void raid_init(int the_level, 
+			   int strip_size, 
+			   int num_disks,
+			   int disk_size) {
 
-void raid_init(disk_array_t the_array, 
-	       int the_level, 
-	       int strip_size, 
-	       int num_disks,
-	       int disk_size) {
+  _da = disk_array_create("myvirtualdisk", num_disks, disk_size);
+  if(!_da) {
+	fprintf(stderr,"couldn't create virtual disk: %s\n",strerror(errno));
+	exit(1);
+  }
+
   raid_level = the_level;
 
   switch(raid_level) {
     
   case 0:
-    zeroInit(the_array, strip_size, num_disks);
+    zeroInit(_da, strip_size, num_disks);
     break;
   case 10:
-    tenInit(the_array, strip_size, num_disks, disk_size);
+    tenInit(_da, strip_size, num_disks, disk_size);
     break;
   case 4:
-    fourInit(the_array, strip_size, num_disks, disk_size);
+    fourInit(_da, strip_size, num_disks, disk_size);
     break;
   case 5:
     fiveInit(the_array, strip_size, num_disks, disk_size);
@@ -161,6 +168,8 @@ void raid_disk_recover(int disk_num) {
 }
 
 void raid_cleanup() {
+
+
   switch(raid_level) {
   case 4:
     fourCleanup();
@@ -177,4 +186,8 @@ void raid_cleanup() {
   default:
     break;
   }
+
+  disk_array_print_stats(_da);
+  disk_array_close(_da);
+
 }
