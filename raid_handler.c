@@ -7,9 +7,14 @@
 #include <string.h>
 #include <errno.h>
 
-extern int verbose;
+/**
+ * Handles input based on which level was chosen
+ * switch statement call appropriate functions
+ */
+
+extern int verbose; //global verbose variable for extra printouts
 int raid_level;
-int _buff[BLOCK_SIZE / (sizeof(int) / sizeof(char))];
+int _buff[BLOCK_SIZE / (sizeof(int) / sizeof(char))]; //buffer for reads
 
 void printd(char* str) {
   if(verbose) printf(str);
@@ -93,9 +98,10 @@ int ii;
 void raid_disk_array_write(int block_num, int block_size, int value) {
   
   int numWrites = 0;
+  //fill buffer full of var value repeatedly
   for(ii = 0; ii < sizeof(_buff) / sizeof(int); ++ii) {
-	_buff[ii] = value;
-	numWrites ++;
+	  _buff[ii] = value;
+	  numWrites ++;
   }
 
   switch(raid_level) {
@@ -137,6 +143,7 @@ void raid_disk_fail(int disk_num) {
     rc = 1;
     break;
   }
+  //check return code
   if(rc != 0){
 	printf("Error failing disk %d\n", disk_num);
   }
@@ -162,8 +169,9 @@ void raid_disk_recover(int disk_num) {
     rc = 1;
     break;
   }
+  //check return code
   if(rc != 0){
-	printd1("Error recovering disk %d\n", disk_num);
+	  printd1("Error recovering disk %d\n", disk_num);
   }
 }
 
@@ -186,7 +194,7 @@ void raid_cleanup() {
   default:
     break;
   }
-
+  //end of program bookkeeping
   disk_array_print_stats(_da);
   disk_array_close(_da);
 

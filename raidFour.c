@@ -88,10 +88,10 @@ void fourInit(disk_array_t da, int strip_size_,
   // If it DOES need to be init-ed, use newParity().
 }
 
-void fourCleanup() { free(disk_active); }
+void fourCleanup() { free(disk_active); } //deconstructor
 
 /**
- * yeah I went there. Strip those disks!
+ * This function handles striping across the disks
  */
 static int stripper(int size, int lba, char* value, short isWrite) {
 
