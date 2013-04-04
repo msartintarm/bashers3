@@ -99,6 +99,10 @@ static int stripper(int size, int lba, char* value, short isWrite) {
       // The loop will also increment i
       i += num_disks * strip_size - 1;
       block_offset += strip_size;
+      stripe = block_offset / strip_size;
+      parity_disk = stripe % num_disks;
+      if(parity_disk == 0) disk_num++;
+      if(parity_disk == 1) disk_num = 0;
       continue;
     }
 
@@ -234,7 +238,7 @@ static void writeStripe(int block_offset, char* data, int parity_disk) {
           *parityBuff ^= *(int*)data;
           disk_array_write(disk_arr, disk, offset, data);
         }
-  }
   disk_array_write(disk_arr, parity_disk, offset, (char*)parityBuff);
+  }
 }
 
