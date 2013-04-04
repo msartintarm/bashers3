@@ -19,5 +19,6 @@ int zeroWrite(int size, int lba, char* value);
 
 int zeroFail(int failed_disk);
 
-void zeroCleanup();
+int zeroRecover(int failed_disk);
 
+void zeroCleanup();

@@ -34,6 +34,7 @@ struct disk * disk_open( const char *diskname, int nblocks )
 
 	d->fd = open(diskname,O_CREAT|O_RDWR,0777);
 	if(d->fd<0) {
+
 		free(d);
 		return 0;
 	}
@@ -101,5 +102,5 @@ void disk_close( struct disk *d )
 
 void disk_print_stats( struct disk * d)
 {
-  printf("\t READS: %d\n\tWRITES: %d\n",d->nreads, d->nwrites);
+    printf("\t READS: %d\n\tWRITES: %d\n",d->nreads, d->nwrites);
 }

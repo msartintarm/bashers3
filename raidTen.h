@@ -3,7 +3,7 @@
 /**
  * Initialize stuff.
  */
-void tenInit(disk_array_t da, int strip, int disk);
+void tenInit(disk_array_t da, int strip, int disk, int asdas);
 
 /**
  * Read starting at block LBA for SIZE blocks.

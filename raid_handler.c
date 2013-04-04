@@ -45,7 +45,7 @@ void raid_init(disk_array_t the_array,
     zeroInit(the_array, strip_size, num_disks);
     break;
   case 10:
-    tenInit(the_array, strip_size, num_disks);
+    tenInit(the_array, strip_size, num_disks, disk_size);
     break;
   case 4:
     fourInit(the_array, strip_size, num_disks, disk_size);
@@ -127,8 +127,7 @@ void raid_disk_recover(int disk_num) {
   int rc;
   switch(raid_level) {
   case 0:
-    //can't recover
-    rc = -1;
+    rc = zeroRecover(disk_num);
     break;
   case 10:
     rc = tenRecover(disk_num);

@@ -117,7 +117,7 @@ static int stripper(int size, int lba, char* value, short isWrite) {
     } else { //Read operation
       if(disk_active[disk_num]) {
 	disk_array_read(disk_arr, disk_num, block_offset, buffer);
-	printf("%d\n", *((int*)buffer));
+	printf("%d ", *((int*)buffer));
       } else {
 		printd2("Reconstructing disk %d index %d from parity.\n", disk_num, block_offset);
 	disk_array_read(disk_arr, parity_disk, block_offset, (char*)parityBuff);
@@ -130,9 +130,10 @@ static int stripper(int size, int lba, char* value, short isWrite) {
 	printd2("Reconstruction result: *", disk_num, block_offset);
 	printf("%d", *((int*)parityBuff));
 	printd("*");
-	printf("\n");
+	printf(" ");
       }
     }
+
     // Compute new index
     if(++block_offset % strip_size == 0) {
 	  // Iterate disk!

@@ -52,7 +52,7 @@ depend: .depend
 	$(CXX) $(CPPFLAGS) -MM $^>>./.depend;
 
 clean:
-	$(RM) $(OBJS)
+	$(RM) $(OBJS) $(PROG) $(PROG).o
 
 dist-clean: clean
 	$(RM) *~ .dependtool

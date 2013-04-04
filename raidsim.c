@@ -74,15 +74,15 @@ int main(int argc, char *argv[]){
 
   // Input params have passed syntax checking - now init disks and RAID.
   
-	disk_array_t da = disk_array_create("myvirtualdisk", disks, size);
-	if(!da) {
-		fprintf(stderr,"couldn't create virtual disk: %s\n",strerror(errno));
-		return 1;
-	}
+  disk_array_t da = disk_array_create("myvirtualdisk", disks, size);
+  if(!da) {
+	fprintf(stderr,"couldn't create virtual disk: %s\n",strerror(errno));
+	return 1;
+  }
 
-	raid_init(da, level, strip, disks, size);
-	// Automatic garbage collection
-	atexit(raid_cleanup);
+  raid_init(da, level, strip, disks, size);
+  // Automatic garbage collection
+  atexit(raid_cleanup);
 
   FILE* trace_file = fopen(trace, "r");
   if(trace_file == NULL){
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]){
 	//    printd(" * ");
     printf(one_line);
 
-	char* first_word = strtok(one_line, " ");
+	char* first_word = strtok(one_line, " \n");
 
 	if(!strcmp(first_word, "READ")) {
 	  int block_num = atoi(strtok(NULL, " "));
@@ -120,13 +120,14 @@ int main(int argc, char *argv[]){
 	  int disk_num = atoi(strtok(NULL, " "));
 	  raid_disk_recover(disk_num);
 	  
+	  //	} else if(!strncmp(first_word, "END", 3)) {
 	} else if(!strcmp(first_word, "END")) {
-	  //	  disk_array_print_stats();
 	  break;
 	}
   }
   
   free(one_line);
+  disk_array_print_stats(da);
 
   fclose(trace_file);
   disk_array_close(da);

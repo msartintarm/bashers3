@@ -21,9 +21,9 @@ void zeroInit(disk_array_t da, int strip, int disk) {
   _strip = strip;
   _disk = disk;
   int i;
-  disk_active = malloc(_disk-1 * sizeof(int));
+  disk_active = malloc(_disk * sizeof(int));
   // All disks start out as active (not failed)
-  for(i = 0; i < _disk-1; ++i) {
+  for(i = 0; i < _disk; ++i) {
     disk_active[i] = 1;
   }
 }
@@ -47,9 +47,7 @@ static int stripper(int size, int lba, char* value, short isWrite) {
   int rc = 0;
   short startFound = 0;
   int diskIndex  = 0;
-  int stripIndex = 0; 
   int blockIndex = 0; //index of block within disk
-  int multiple   = 0; //used to move blocks to next set of strips
   int i;
   short write_error = 0;
   //loop until address reached
@@ -63,27 +61,34 @@ static int stripper(int size, int lba, char* value, short isWrite) {
         if(disk_active[diskIndex] == 0) {
           write_error = 1;
         }
-        else {
-          disk_array_write(_da, diskIndex, blockIndex, value);
-          //printf("Writing [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
-        }
+		disk_array_write(_da, diskIndex, blockIndex, value);
+		//printf("Writing [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
         
       }
       //Read operation
       else {
-      
+		disk_array_read(_da, diskIndex, blockIndex, buffer);
         if(!disk_active[diskIndex]) {
-          printf("ERROR \n");
+          printf("ERROR ");
         }
         else {
-          disk_array_read(_da, diskIndex, blockIndex, buffer);
-	        printf("%d\n", *((int*)buffer));
+		  printf("%d ", *((int*)buffer));
           //printf("Reading [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
         }
         
       }
     }
     
+    //if reached end of strip change disk
+	if(++blockIndex % _strip == 0) {
+	  diskIndex += 1;
+	  if(diskIndex % _disk == 0) {
+		diskIndex = 0;
+	  } else {
+		blockIndex -= _strip;
+	  }
+	}
+	/*
     //if reached end of strip change disk
     if((_strip-1) == stripIndex){
       //if reached last disk move back to disk 0
@@ -106,11 +111,11 @@ static int stripper(int size, int lba, char* value, short isWrite) {
       blockIndex++;
       stripIndex++;
     }
-    
+	*/
   }
   diskIndex = diskIndex % _disk;
   if(write_error){
-    printf("ERROR \n");
+    printf("ERROR ");
     write_error = 0;
   }
   //printf("Found: [%d,%d]\n", diskIndex, blockIndex);
