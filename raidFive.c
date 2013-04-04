@@ -86,7 +86,8 @@ static int stripper(int size, int lba, char* value, short isWrite) {
   for(i = 0; i < size; ++i) {
 
     // check whether we are on disk 0
-    if(disk_num == 0 &&
+    if((disk_num == 0 ||
+		(disk_num == 1 && parity_disk == 0)) &&
       // at the beginning of a stripe
       block_offset % strip_size == 0 &&
       // if so, check whether there are enough writes
