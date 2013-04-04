@@ -1,3 +1,3 @@
 Nathan DiPiazza: ndipiazza
-Maxwell Kleinhaus: mkleinhaus
+Maxwell Kleinhans: mkleinha
 Michael Sartin-Tarm: sartin-t
