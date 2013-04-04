@@ -15,6 +15,7 @@ Make all of your changes to main.c instead.
 //extern ssize_t pread (int __fd, void *__buf, size_t __nbytes, __off_t __offset);
 //extern ssize_t pwrite (int __fd, const void *__buf, size_t __nbytes, __off_t __offset);
 
+extern int verbose;
 
 struct disk {
 	int fd;
@@ -31,10 +32,10 @@ struct disk * disk_open( const char *diskname, int nblocks )
 
 	d = malloc(sizeof(*d));
 	if(!d) return 0;
+	memset(d,0,sizeof(*d));
 
 	d->fd = open(diskname,O_CREAT|O_RDWR,0777);
 	if(d->fd<0) {
-
 		free(d);
 		return 0;
 	}
@@ -96,11 +97,14 @@ int disk_nblocks( struct disk *d )
 
 void disk_close( struct disk *d )
 {
+  if (verbose) {
+    disk_print_stats(d);
+  }
 	close(d->fd);
 	free(d);
 }
 
 void disk_print_stats( struct disk * d)
 {
-    printf("\t READS: %d\n\tWRITES: %d\n",d->nreads, d->nwrites);
+  printf("\t READS: %d\n\tWRITES: %d\n",d->nreads, d->nwrites);
 }
