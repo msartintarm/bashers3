@@ -59,7 +59,7 @@ void raid_init(int the_level,
     fourInit(_da, strip_size, num_disks, disk_size);
     break;
   case 5:
-    fiveInit(the_array, strip_size, num_disks, disk_size);
+    fiveInit(_da, strip_size, num_disks, disk_size);
     break;
   }
 }

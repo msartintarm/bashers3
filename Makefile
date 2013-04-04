@@ -35,6 +35,9 @@ raid4recover2: prog
 raid4stripe: prog
 	./$(PROG) -level 4 -strip 3 -disks 4 -size 15 -trace traces/fullStripe.txt -verbose
 
+raid5stripe: prog
+	./$(PROG) -level 5 -strip 3 -disks 4 -size 15 -trace traces/fullStripe.txt -verbose
+
 raid0: $(OBJS) $(RAID0).o
 	gcc $(LDFLAGS) -o $(RAID0) $(OBJS) $(RAID0).o $(LDLIBS) 
 	./$(RAID0) 2 2 0 2
