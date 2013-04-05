@@ -74,7 +74,7 @@ static int stripper(int size, int lba, char* value, short isWrite) {
   int strip = lba / strip_size; 
   int disk_num = strip % (num_disks - 1); 
   int stripe = strip / (num_disks - 1);
-  //disk on which parity bits are stored
+  //disk on which parity bits are stored for a given stripe
   int parity_disk = stripe % num_disks; 
   if(disk_num >= parity_disk) disk_num++;
   block_offset += stripe * strip_size;
@@ -99,6 +99,8 @@ static int stripper(int size, int lba, char* value, short isWrite) {
       // The loop will also increment i
       i += num_disks * strip_size - 1;
       block_offset += strip_size;
+      
+      //compute new parity disk
       stripe = block_offset / strip_size;
       parity_disk = stripe % num_disks;
       if(parity_disk == 0) disk_num++;
