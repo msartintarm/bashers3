@@ -6,7 +6,8 @@
 
 /*
 * RAID 5
-* strip disks and use parity bits to recover a failed disk
+* striping with location of parity bits rotating across disks for each stripe
+*
 */
 
 // -- Local variables -- //
@@ -78,6 +79,7 @@ static int stripper(int size, int lba, char* value, short isWrite) {
   //disk on which parity bits are stored for a given stripe
   int parity_disk = stripe % num_disks; 
   if(disk_num >= parity_disk) disk_num++;
+  //adjusts offset to correct stripe
   block_offset += stripe * strip_size;
 
   printd1(" Block address: %d\n", lba);
@@ -86,7 +88,7 @@ static int stripper(int size, int lba, char* value, short isWrite) {
   int i;
   for(i = 0; i < size; ++i) {
 
-    // check whether we are on disk 0
+    // check whether we are on the first disk in the stripe 
     if((disk_num == 0 ||
 		(disk_num == 1 && parity_disk == 0)) &&
       // at the beginning of a stripe
@@ -101,7 +103,7 @@ static int stripper(int size, int lba, char* value, short isWrite) {
       i += num_disks * strip_size - 1;
       block_offset += strip_size;
       
-      //compute new parity disk
+      //compute new parity disk and adjust disk_num to avoid it
       stripe = block_offset / strip_size;
       parity_disk = stripe % num_disks;
       if(parity_disk == 0) disk_num++;
@@ -130,8 +132,8 @@ static int stripper(int size, int lba, char* value, short isWrite) {
 	int j;
 	for(j = 0; j < num_disks; ++j) {
 	  if(!disk_active[j] || j == parity_disk) continue;
-	    disk_array_read(disk_arr, j, block_offset, buffer);
-	    parityBuff[0] ^= *(int*)buffer;
+	  disk_array_read(disk_arr, j, block_offset, buffer);
+	  parityBuff[0] ^= *(int*)buffer;
 	}
 	printd2("Reconstruction result: *", disk_num, block_offset);
 	printf("%d", *((int*)parityBuff));
@@ -198,7 +200,7 @@ static void additiveParity(int disk_num, int block_offset,
   // Don't need to read parity disk - instead, set to 0.
   *parityBuff = 0;
   for(ii = 0; ii < num_disks; ++ii) {
-	if(ii == disk_num || ii == parity_disk) continue; // This is always 0.
+	if(ii == disk_num || ii == parity_disk) continue;
 	disk_array_read(disk_arr, ii, block_offset, buffer);
 	*parityBuff ^= *(int*)buffer;
   }
