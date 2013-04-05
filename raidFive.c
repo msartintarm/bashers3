@@ -4,8 +4,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-/*RAID 5
-*
+/*
+* RAID 5
+* strip disks and use parity bits to recover a failed disk
 */
 
 // -- Local variables -- //
@@ -62,10 +63,10 @@ void fiveInit(disk_array_t da, int strip_size_,
   }
 }
 
-void fiveCleanup() { free(disk_active); }
+void fiveCleanup() { free(disk_active); } //deconstructor
 
 /**
- * yeah I went there. Strip those disks!
+ * This function handles striping across the disks
  */
 static int stripper(int size, int lba, char* value, short isWrite) {
 

@@ -4,10 +4,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-/* TODO We need to do some bookeeping right away.
- * Setup the disk structure before hand which will 
- * provide the mapping of the LBA to the proper (disk,block) address
- * Then read/write can just iterate without knowing anything about disk structure
+/* 
+ * Raid implementation of RAID 0
+ * strip data across disks
+ * 
  */ 
 
 int _strip;
@@ -16,19 +16,22 @@ char buffer[BLOCK_SIZE];
 static disk_array_t _da;
 static int* disk_active; // 0 denotes the disk is failed
 
+/**
+ * initialize needed vars & malloc array 
+ */
 void zeroInit(disk_array_t da, int strip, int disk) {
   _da = da;
   _strip = strip;
   _disk = disk;
   int i;
-  disk_active = malloc(_disk * sizeof(int));
+  disk_active = malloc(_disk * sizeof(int)); //malloc array to keep track of failed disks
   // All disks start out as active (not failed)
   for(i = 0; i < _disk; ++i) {
     disk_active[i] = 1;
   }
 }
 
-void zeroCleanup() { free(disk_active); }
+void zeroCleanup() { free(disk_active); } //deconstructor
 
 /*RAID 0
 *
@@ -41,7 +44,7 @@ void zeroCleanup() { free(disk_active); }
 */
 
 /**
- * yeah I went there. Strip those disks!
+ * This function handles striping across the disks
  */
 static int stripper(int size, int lba, char* value, short isWrite) {
   int rc = 0;
@@ -55,70 +58,46 @@ static int stripper(int size, int lba, char* value, short isWrite) {
     if(i == lba){
       startFound = 1;
     }
+    //if address reached perform read or write
     if(startFound == 1){
       if(isWrite == 1){
-      
+        //has the disk failed?
         if(disk_active[diskIndex] == 0) {
           write_error = 1;
         }
-		disk_array_write(_da, diskIndex, blockIndex, value);
-		//printf("Writing [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
-        
+		    disk_array_write(_da, diskIndex, blockIndex, value);
       }
       //Read operation
       else {
-		disk_array_read(_da, diskIndex, blockIndex, buffer);
+		    disk_array_read(_da, diskIndex, blockIndex, buffer);
+		    //if bad disk print error message
         if(!disk_active[diskIndex]) {
           printf("ERROR ");
         }
         else {
-		  printf("%d ", *((int*)buffer));
-          //printf("Reading [disk,block]: [%d,%d]\n", diskIndex, blockIndex);
+	        printf("%d ", *((int*)buffer)); //print output from read
         }
-        
       }
-    }
+    } //end if start found
     
     //if reached end of strip change disk
-	if(++blockIndex % _strip == 0) {
-	  diskIndex += 1;
-	  if(diskIndex % _disk == 0) {
-		diskIndex = 0;
-	  } else {
-		blockIndex -= _strip;
+	  if(++blockIndex % _strip == 0) {
+	    diskIndex += 1;
+	    if(diskIndex % _disk == 0) {
+		    diskIndex = 0;
+	    }
+	    else {
+		    blockIndex -= _strip;
+	    }
 	  }
-	}
-	/*
-    //if reached end of strip change disk
-    if((_strip-1) == stripIndex){
-      //if reached last disk move back to disk 0
-      if(diskIndex == (_disk-1)){
-        diskIndex = 0;
-        multiple += _strip;
-        stripIndex = 0;
-      }
-      //not the last disk
-      else {
-        //blockIndex = multiple;
-        diskIndex++;
-        stripIndex = 0;
-      }
-      blockIndex = multiple; //reset to block to strip multiple
-      
-    }
-    //move to next block/strip
-    else {
-      blockIndex++;
-      stripIndex++;
-    }
-	*/
-  }
+	
+  } //end size+lba for loop
   diskIndex = diskIndex % _disk;
+  //inform user of write error
   if(write_error){
     printf("ERROR ");
     write_error = 0;
   }
-  //printf("Found: [%d,%d]\n", diskIndex, blockIndex);
   
   return rc;
 }
@@ -145,7 +124,7 @@ int zeroFail(int failed_disk) {
 //clear out disk with zeroes
 int zeroRecover(int new_disk) {
   int rc = 0;
-  disk_active[new_disk] = -1;
+  disk_active[new_disk] = -1; //special case for write handling
   rc = disk_array_recover_disk(_da,new_disk);
   return rc;
 }
